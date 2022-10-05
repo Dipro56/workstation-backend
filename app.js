@@ -23,6 +23,7 @@ const URI = 'mongodb://127.0.0.1:27017/Workstation';
 const OPTION = {
   user: '',
   pass: '',
+  autoIndex: true,
 };
 
 // const URI = 'mongodb://127.0.0.1:27017/JerseyVandar';
