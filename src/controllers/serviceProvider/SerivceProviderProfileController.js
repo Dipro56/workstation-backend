@@ -1,53 +1,64 @@
 const ServiceProviderModel = require('../../models/ServiceProvider/ServiceProviderModel');
+const AuthVerifyMiddleware = require('../../middleware/AuthVerifyMiddleware');
+
+var jwt = require('jsonwebtoken');
 
 exports.CreateServiceProvider = (req, res) => {
-  let itemBody = req.body;
+  let providerBody = req.body;
 
-  console.log('item body', itemBody);
-  res.status(200).json({ status: 'success,' });
-  // ServiceProviderModel.ServiceProviderSchema.create(itemBody, (err, data) => {
-  //   if (err) {
-  //     res.status(400).json({ status: 'fail,', data: err });
-  //   } else {
-  //     console.log(data);
-  //     res.status(200).json({ status: 'success,', data: data });
-  //   }
-  // });
-
-  // if (id === itemBody.addedById) {
-  //   console.log('id and addedById matched');
-  //   ItemsModel.ItemsSchema.create(itemBody, (err, data) => {
-  //     if (err) {
-  //       res.status(400).json({ status: 'fail,', data: err });
-  //     } else {
-  //       console.log(data);
-  //       res.status(200).json({ status: 'success,', data: data });
-  //     }
-  //   });
-  // } else {
-  //   console.log('id and addedById did not match');
-  //   res.status(400).json({ status: 'fail,', data: 'Not a proper user' });
-  // }
+  // console.log('item body', itemBody);
+  // res.status(200).json({ status: 'success,' });
+  ServiceProviderModel.ServiceProviderSchema.create(
+    providerBody,
+    (err, data) => {
+      if (err) {
+        res.status(400).json({ status: 'fail,', data: err });
+      } else {
+        console.log(data);
+        res.status(200).json({ status: 'success,', data: data });
+      }
+    }
+  );
 };
 
-// exports.CreateItem = (req, res) => {
-//   let itemBody = req.body;
-//   let id = req.params.id;
+exports.ServiceProviderLogin = (req, res) => {
+  let email = req.body['email'];
+  let password = req.body['password'];
+  console.log(email, password);
+  ServiceProviderModel.ServiceProviderSchema.find(
+    { email: email, password: password },
+    (err, data) => {
+      if (err) {
+        res.status(400).json({ status: 'fail', data: err });
+      } else {
+        if (data.length > 0) {
+          let payload = {
+            exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+            data: data[0],
+          };
+          let token = jwt.sign(payload, 'secret');
+          res
+            .status(200)
+            .json({ status: 'success,', token: token, data: data[0] });
+        } else {
+          res.status(401).json({ status: 'unauthorized' });
+        }
+      }
+    }
+  );
+};
 
-//   console.log(itemBody, id, itemBody.addedById);
-
-//   if (id === itemBody.addedById) {
-//     console.log('id and addedById matched');
-//     ItemsModel.ItemsSchema.create(itemBody, (err, data) => {
-//       if (err) {
-//         res.status(400).json({ status: 'fail,', data: err });
-//       } else {
-//         console.log(data);
-//         res.status(200).json({ status: 'success,', data: data });
-//       }
-//     });
-//   } else {
-//     console.log('id and addedById did not match');
-//     res.status(400).json({ status: 'fail,', data: 'Not a proper user' });
-//   }
-// };
+exports.SelectServiceProfile = (req, res) => {
+  let email = req.headers['email'];
+  console.log('after getting token email', email);
+  ServiceProviderModel.ServiceProviderSchema.find(
+    { email: email },
+    (err, data) => {
+      if (err) {
+        res.status(400).json({ status: 'fail', data: err });
+      } else {
+        res.status(401).json({ status: 'success', data: data });
+      }
+    }
+  );
+};
